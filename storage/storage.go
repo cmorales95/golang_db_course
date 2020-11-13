@@ -13,7 +13,7 @@ var (
 	once sync.Once
 )
 
-//NewPostgresDB singleton
+// NewPostgresDB singleton
 func NewPostgresDB() {
 	once.Do(func(){
 		var err error

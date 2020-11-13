@@ -18,11 +18,6 @@ type Models []*Model
 
 type Storage interface {
 	Migrate() error
-	/*Create(*Model) error
-	Update(*Model) error
-	GetAll() (Models, error)
-	GetByID(uint) (*Model, error)
-	Delete(uint) error*/
 }
 
 //Service product
