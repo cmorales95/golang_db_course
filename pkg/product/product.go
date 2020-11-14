@@ -18,6 +18,7 @@ type Models []*Model
 
 type Storage interface {
 	Migrate() error
+	Create(model *Model) error
 }
 
 //Service product
@@ -33,4 +34,10 @@ func NewService(s Storage) *Service {
 //Migrate is used for the migration of product
 func (s *Service) Migrate() error {
 	return s.Storage.Migrate()
+}
+
+//Create product
+func (s *Service) Create(m *Model) error {
+	m.CreatedAt = time.Now()
+	return s.Storage.Create(m)
 }
