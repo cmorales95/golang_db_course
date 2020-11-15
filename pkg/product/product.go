@@ -1,9 +1,12 @@
 package product
 
 import (
+	"errors"
 	"fmt"
 	"time"
 )
+
+var errIdNotFound = errors.New("product Id is not setting")
 
 // Model of product
 type Model struct {
@@ -30,6 +33,8 @@ type Storage interface {
 	Create(model *Model) error
 	GetById(id uint) (*Model, error)
 	GetAll() (Models, error)
+	Update(model *Model) error
+	Delete(id uint) error
 }
 
 //Service product
@@ -61,4 +66,19 @@ func (s *Service) GetAll() (Models, error) {
 //GetById is used to get a specific product by id
 func (s *Service) GetById(id uint) (*Model, error) {
 	return s.Storage.GetById(id)
+}
+
+//Update is used to update a product
+func (s *Service) Update(m *Model) error {
+	if m.ID == 0 {
+		return errIdNotFound
+	}
+	m.UpdatedAt = time.Now()
+
+	return s.Storage.Update(m)
+}
+
+//Delete is used to update a product
+func (s *Service) Delete(id uint) error {
+	return s.Storage.Delete(id)
 }
