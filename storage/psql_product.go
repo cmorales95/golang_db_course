@@ -6,6 +6,10 @@ import (
 	"github.com/cmorales95/golang_db/pkg/product"
 )
 
+type scanner interface {
+	Scan(dest ...interface{}) error
+}
+
 const (
 	psqlMigrateProduct = `CREATE TABLE IF NOT EXISTS products(
 		id SERIAL NOT NULL,
@@ -18,6 +22,9 @@ const (
 	)`
 	psqlCreateProduct = `INSERT INTO products (name, observations, price, created_at)
 	VALUES ($1, $2, $3, $4) RETURNING id`
+
+	psqlGetAllProduct = `SELECT id, name, observations, price, created_at, updated_at FROM products`
+	psqlProductByID = psqlGetAllProduct + " WHERE id = $1"
 )
 
 // PsqlProduct used for work with postgres - product
@@ -42,7 +49,7 @@ func (p *PsqlProduct) Migrate() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Product migration has been executed succesfully")
+	fmt.Println("Product migration has been executed successfully")
 	return nil
 }
 
@@ -65,3 +72,64 @@ func (p *PsqlProduct) Create(m *product.Model) error {
 	fmt.Println("Se creó el producto correctamente")
 	return nil
 }
+
+//GetAll implement interface of product.storage
+func (p *PsqlProduct) GetAll() (product.Models, error) {
+	stmt, err := p.db.Prepare(psqlGetAllProduct)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	ms := make(product.Models, 0)
+	for rows.Next() {
+		m, err := scanRowProduct(rows)
+		if err != nil {
+			return nil, err
+		}
+		ms = append(ms, m)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return ms, nil
+}
+
+//GetById implment the interface of product.storage
+func (p *PsqlProduct) GetById(id uint) (*product.Model, error) {
+	stmt, err := p.db.Prepare(psqlProductByID)
+	if err != nil {
+		return &product.Model{}, err
+	}
+	defer stmt.Close()
+	
+	return scanRowProduct(stmt.QueryRow(id))
+}
+
+func scanRowProduct(s scanner) (*product.Model, error) {
+	m := &product.Model{}
+	observationNull := sql.NullString{}
+	updatedAtNull := sql.NullTime{}
+	err := s.Scan(
+		&m.ID,
+		&m.Name,
+		&observationNull,
+		&m.Price,
+		&m.CreatedAt,
+		&updatedAtNull,
+	)
+	if err != nil {
+		return nil, err
+	}
+	m.Observations = observationNull.String
+	m.UpdatedAt = updatedAtNull.Time
+	return m, nil
+}
+
