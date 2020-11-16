@@ -9,10 +9,59 @@ import (
 )
 
 func main() {
-	storage.NewPostgresDB()
+	storage.NewMySQLDB()
+	storageHeader := storage.NewMySQLInvoiceHeader(storage.Pool())
+	storageItems := storage.NewMySQLInvoiceItem(storage.Pool())
+	storageInvoice := storage.NewPsqlInvoice(
+		storage.Pool(),
+		storageHeader,
+		storageItems,
+	)
 
-	storageHeader := storage.NewPsqlInvoiceHeader(storage.Pool())
-	storageItems := storage.NewPsqlInvoiceItem(storage.Pool())
+	m := &invoice.Model{
+		Header: &invoiceheader.Model{
+			Client: "Cristian Morales",
+		},
+		Items: invoiceitem.Models{
+			&invoiceitem.Model{ProductID: 3},
+		},
+	}
+
+	serviceInvoice := invoice.NewService(storageInvoice)
+	if err := serviceInvoice.Create(m); err != nil {
+		log.Fatal("invoice.create: %v", err)
+	}
+
+}
+
+/*
+
+	storageHeader := storage.NewMySQLInvoiceHeader(storage.Pool())
+	storageItems := storage.NewMySQLInvoiceItem(storage.Pool())
+	serviceHeader := invoiceheader.NewService(storageHeader)
+	serviceItems := invoiceitem.NewService(storageItems)
+
+	if err := serviceHeader.Migrate(); err != nil {
+		log.Fatalf("%v", err)
+	}
+	if err := serviceItems.Migrate(); err != nil {
+		log.Fatalf("%v", err)
+	}
+
+
+storageProduct := storage.NewMySQLProduct(storage.Pool())
+	serviceProduct := product.NewService(storageProduct)
+
+	err := serviceProduct.Delete(2)
+	if err != nil {
+		log.Fatalf("product.delete: %v", err)
+	}
+
+
+storage.NewPostgresDB()
+
+	storageHeader := storage.NewMySQLInvoiceHeader(storage.Pool())
+	storageItems := storage.NewMySQLInvoiceItem(storage.Pool())
 	storageInvoice := storage.NewPsqlInvoice(
 		storage.Pool(),
 		storageHeader,
@@ -34,52 +83,7 @@ func main() {
 	}
 
 
-}
 
 
-/*
-	ms, err := serviceProduct.GetAll()
-	if err != nil {
-		log.Fatalf("Error")
-	}
-
-	switch {
-	case errors.Is(err, sql.ErrNoRows):
-		fmt.Println("There is no product with the id")
-	case err != nil :
-			log.Fatalf("product.GetById: %v", err)
-	default:
-		fmt.Println(m)
-	}
-
-	m := &product.Model{
-		ID:           5,
-		Name:         "Curso de Go",
-		Price: 90,
-	}
-	err := serviceProduct.Update(m)
-	if err != nil {
-		log.Fatalf("product.update: %v", err)
-	}
-
-	storageHeader := storage.NewPsqlInvoiceHeader(storage.Pool())
-	storageItems := storage.NewPsqlInvoiceItem(storage.Pool())
-	serviceHeader := invoiceheader.NewService(storageHeader)
-	serviceItems := invoiceitem.NewService(storageItems)
-
-	if err := serviceHeader.Migrate(); err != nil {
-		log.Fatalf("%v", err)
-	}
-	if err := serviceItems.Migrate(); err != nil {
-		log.Fatalf("%v", err)
-	}
-
-
-storageProduct := storage.NewPsqlProduct(storage.Pool())
-	serviceProduct := product.NewService(storageProduct)
-
-	err := serviceProduct.Delete(2)
-	if err != nil {
-		log.Fatalf("product.delete: %v", err)
 	}
 */

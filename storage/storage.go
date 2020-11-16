@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
+	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"sync"
 	"time"
@@ -27,6 +28,22 @@ func NewPostgresDB() {
 			log.Fatalf("Connection with Ping DB: %v", err)
 		}
 		fmt.Println("Connected to Postgres!")
+	})
+}
+
+// NewPostgresDB singleton
+func NewMySQLDB() {
+	once.Do(func(){
+		var err error
+		db, err = sql.Open("mysql", "root:root@tcp(localhost:3306)/godb?parseTime=true")
+		if err != nil {
+			log.Fatalf("Connection with DB is not available: %v", err)
+		}
+
+		if err = db.Ping(); err != nil {
+			log.Fatalf("Connection with Ping DB: %v", err)
+		}
+		fmt.Println("Connected to MySQL!")
 	})
 }
 

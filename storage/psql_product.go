@@ -154,7 +154,7 @@ func (p *PsqlProduct) Delete(id uint) error {
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(1)
+	_, err = stmt.Exec(id)
 	if err != nil {
 		return err
 	}
