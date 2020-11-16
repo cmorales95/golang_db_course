@@ -25,7 +25,7 @@ const (
 
 	psqlGetAllProduct = `SELECT id, name, observations, price, created_at, updated_at FROM products`
 	psqlProductByID = psqlGetAllProduct + " WHERE id = $1"
-	psqlUpdateProduct = `UPDATE products SET name = $1, observations = $2, price = $3, updated_at = $4 WHERE Id = $5`
+	psqlUpdateProduct = `UPDATE products SET name = $1, observations = $2, price = $3, updated_at = $4 WHERE ID = $5`
 	psqlDeleteProduct = `DELETE FROM products WHERE id = $1`
 )
 

@@ -3,16 +3,19 @@ package storage
 import (
 	"database/sql"
 	"fmt"
+	"github.com/cmorales95/golang_db/pkg/invoiceheader"
 )
 
 const (
 	psqlMigrateInvoiceHeader = `CREATE TABLE IF NOT EXISTS invoice_headers(
-		id SERIAL NOT NULL,
-		client VARCHAR(100) NOT NULL,
-		created_at TIMESTAMP NOT NULL DEFAULT now(),
-		updated_at TIMESTAMP,
-		CONSTRAINT invoice_header_id_pk PRIMARY KEY (id)
+    	id SERIAL NOT NULL,
+    	client VARCHAR(100) NOT NULL,
+    	created_at TIMESTAMP NOT NULL DEFAULT now(),
+    	updated_at TIMESTAMP,
+    	CONSTRAINT invoice_header_id_pk PRIMARY KEY (id)
 	)`
+
+	psqlCreateInvoiceHeader = `INSERT INTO invoice_headers(client) VALUES($1) RETURNING id, created_at`
 )
 
 //PsqlInvoiceHeader used for work with postgres - product
@@ -39,4 +42,15 @@ func (p *PsqlInvoiceHeader) Migrate() error {
 	}
 	fmt.Println("Product invoiceHeader has been executed succesfully")
 	return nil
+}
+
+//CreateTx implement interface of invoiceheader.storage
+func (p *PsqlInvoiceHeader) CreateTx(tx *sql.Tx,m *invoiceheader.Model) error {
+	stmt, err := tx.Prepare(psqlCreateInvoiceHeader)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	
+	return stmt.QueryRow(m.Client).Scan(&m.ID, &m.CreatedAt)
 }

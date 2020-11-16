@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-var errIdNotFound = errors.New("product Id is not setting")
+var errIdNotFound = errors.New("product ID is not setting")
 
 // Model of product
 type Model struct {
@@ -39,33 +39,33 @@ type Storage interface {
 
 //Service product
 type Service struct {
-	Storage Storage
+	storage Storage
 }
 
 //NewService constructor return pointer of service
 func NewService(s Storage) *Service {
-	return &Service{Storage: s}
+	return &Service{storage: s}
 }
 
 //Migrate is used for the migration of product
 func (s *Service) Migrate() error {
-	return s.Storage.Migrate()
+	return s.storage.Migrate()
 }
 
 //Create product
 func (s *Service) Create(m *Model) error {
 	m.CreatedAt = time.Now()
-	return s.Storage.Create(m)
+	return s.storage.Create(m)
 }
 
 //GetAll is used for get all products
 func (s *Service) GetAll() (Models, error) {
-	return s.Storage.GetAll()
+	return s.storage.GetAll()
 }
 
 //GetById is used to get a specific product by id
 func (s *Service) GetById(id uint) (*Model, error) {
-	return s.Storage.GetById(id)
+	return s.storage.GetById(id)
 }
 
 //Update is used to update a product
@@ -75,10 +75,10 @@ func (s *Service) Update(m *Model) error {
 	}
 	m.UpdatedAt = time.Now()
 
-	return s.Storage.Update(m)
+	return s.storage.Update(m)
 }
 
 //Delete is used to update a product
 func (s *Service) Delete(id uint) error {
-	return s.Storage.Delete(id)
+	return s.storage.Delete(id)
 }
